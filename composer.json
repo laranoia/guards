@@ -1,0 +1,19 @@
+{
+    "name": "laranoia/guards",
+    "authors": [
+        {
+            "name": "Stefan Kaiblinger",
+            "email": "skaiblinger@laranoia.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Laranoia\\Guards\\": ["src"]
+        }
+    },
+    "require": {},
+    "require-dev": {
+        "illuminate/auth": "^9.0@dev"
+    }
+}
