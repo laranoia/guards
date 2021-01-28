@@ -5,12 +5,11 @@ namespace Laranoia\Guards\Guards;
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\Request;
 
-class X509 implements Guard
+class X509 implements \Laranoia\Guards\Contracts\X509
 {
     /** @var string */
     protected $name;
@@ -92,16 +91,14 @@ class X509 implements Guard
 
         $user = null;
 
-        $userid = $this->getUserFromCertificate();
+        $userid = $this->getUserIdentifierFromCertificate();
         if (!empty($userid)) {
             $user = $this->provider->retrieveById($userid);
         }
 
-        if($user){
+        if ($user) {
             $this->login($user);
         }
-
-        dump($this->user);
 
         return $this->user;
     }
@@ -116,18 +113,21 @@ class X509 implements Guard
      *
      * Can and should be overwritten for the app authentication
      */
-    protected function getUserFromCertificate()
+    public function getUserIdentifierFromCertificate()
     {
-        return $this->request->server('SSL_CLIENT_S_DN_CN', null);
+        $certinfo = openssl_x509_parse(rawurldecode($this->request->server('SSL_CLIENT_CERTIFICATE')));
+
+        return $certinfo['subject']['CN'];
     }
 
     /**
      * Log a user into the application.
      *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
+     * @param \Illuminate\Contracts\Auth\Authenticatable $user
      * @return void
      */
-    public function login(Authenticatable $user){
+    public function login(Authenticatable $user): void
+    {
         $this->events->dispatch(new Login($this->name, $user, false));
 
         $this->setUser($user);
